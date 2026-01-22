@@ -2,76 +2,71 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>PixelStream Client</title>
+    <title>PixelStream: Physics</title>
     <style>
-        body { font-family: sans-serif; background: #222; color: #fff; text-align: center; padding-top: 50px; }
-        #status { font-size: 1.5rem; color: #f39c12; }
-        .success { color: #2ecc71 !important; }
+        body { background: #222; color: #fff; text-align: center; font-family: sans-serif; }
+        canvas { background: #000; border: 2px solid #555; margin-top: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
-<h1>PixelStream Client</h1>
-<div id="status">Connecting to Signaling...</div>
+<h1>PixelStream: Remote Physics (C++ Authority)</h1>
+<button onclick="startCall()" style="padding: 10px 20px; font-size: 1.2rem; cursor: pointer;">Connect & Play</button>
 <br>
-<button onclick="startCall()" style="padding: 10px 20px; font-size: 1.2rem;">Start Call</button>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
 
 <script>
     const signaling = new WebSocket('ws://localhost:8080');
-    const pc = new RTCPeerConnection({
-        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-    });
+    const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+    const ctx = document.getElementById('gameCanvas').getContext('2d');
     let dataChannel = null;
 
-    // 1. WebSocket Signaling
-    signaling.onopen = () => {
-        document.getElementById('status').innerText = "Signaling Connected. Ready to Start.";
-    };
+    // Draw the ball
+    function draw(x, y) {
+        ctx.clearRect(0, 0, 800, 600);
+        ctx.beginPath();
+        ctx.arc(x, y, 20, 0, Math.PI * 2);
+        ctx.fillStyle = "#3498db";
+        ctx.fill();
+    }
 
     signaling.onmessage = async (message) => {
         const data = JSON.parse(message.data);
         if (data.description) {
-            // If we get an Answer from C++, set it as remote description
-            console.log("Received Answer from C++");
             await pc.setRemoteDescription(data.description);
         } else if (data.candidate) {
-            // If we get an ICE candidate from C++, add it
-            console.log("Received Candidate from C++");
             await pc.addIceCandidate(data.candidate);
         }
     };
 
-    // 2. WebRTC Setup
     pc.onicecandidate = (event) => {
         if (event.candidate) {
-            signaling.send(JSON.stringify({ candidate: event.candidate }));
+            signaling.send(JSON.stringify({
+                candidate: event.candidate.candidate,
+                sdpMid: event.candidate.sdpMid,
+                sdpMLineIndex: event.candidate.sdpMLineIndex
+            }));
         }
     };
 
-    // 3. Start the process (Send Offer)
     async function startCall() {
-        document.getElementById('status').innerText = "Creating Offer...";
+        dataChannel = pc.createDataChannel("game");
 
-        // Create Data Channel (This triggers 'on_data_channel' in C++)
-        dataChannel = pc.createDataChannel("chat");
-        setupDataChannel(dataChannel);
+        // CRITICAL: Treat data as bytes, not text
+        dataChannel.binaryType = "arraybuffer";
+
+        dataChannel.onmessage = (event) => {
+            // Parse 8 bytes (float x, float y)
+            if (event.data.byteLength === 8) {
+                const view = new DataView(event.data);
+                const x = view.getFloat32(0, true); // true = Little Endian
+                const y = view.getFloat32(4, true);
+                draw(x, y);
+            }
+        };
 
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
-
-        // Send Offer to C++ via Signaling
         signaling.send(JSON.stringify({ description: pc.localDescription }));
-    }
-
-    function setupDataChannel(dc) {
-        dc.onopen = () => {
-            document.getElementById('status').innerText = "Connected! (P2P Established)";
-            document.getElementById('status').className = "success";
-            dc.send("Hello from Browser!");
-        };
-        dc.onmessage = (e) => {
-            console.log("Message from C++: " + e.data);
-            alert("C++ says: " + e.data);
-        };
     }
 </script>
 </body>
