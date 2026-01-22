@@ -19,19 +19,12 @@ Start the executable under build folder in a terminal or powershell.
 ```
 
 ### Step 3: Verify with a 3rd Party Client
-To prove the C++ app is actually talking to the outside world, open a new PowerShell window and use wscat (requires Node.js) or a python script.
+Open web/index.html in your browser and click "Connect & Play".
 
-**Option A** (Node.js/wscat):
-```
-npx wscat -c ws://localhost:8080
-```
+- Expected Result: A blue ball bouncing smoothly at 60 FPS.
+- Stress Test: Refresh the page and reconnect multiple times. The C++ app should handle the thread restart 
+and only one clinet (latest) should remain active.
 
-**Option B (Browser):** Go to WebSocket King and connect to ws://localhost:8080.
 
-Verification:
 
-Wait a few seconds.
-
-You should see JSON messages appearing in your 3rd party client: {"type":"ping", "payload":"Hello from C++"}.
-Type a message in the 3rd party client and hit Enter.
-Look at your C++ Console; it should print: [C++] Received: [Your Message].
+[![Video demo] (https://img.youtube.com/vi/hQkQeegANvk/maxresdefault.jpg)](https://youtu.be/hQkQeegANvk)
