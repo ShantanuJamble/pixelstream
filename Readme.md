@@ -27,4 +27,5 @@ and only one clinet (latest) should remain active.
 
 
 
-[![Video demo] (https://img.youtube.com/vi/hQkQeegANvk/maxresdefault.jpg)](https://youtu.be/hQkQeegANvk)
+## Walkthrough
+[![Video demo](https://img.youtube.com/vi/hQkQeegANvk/maxresdefault.jpg)](https://youtu.be/hQkQeegANvk)
