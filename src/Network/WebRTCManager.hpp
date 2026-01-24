@@ -22,6 +22,6 @@ public:
     void onLocalCandidate(LocalCandidateCallback callback);
 
 private:
-    std::shared_ptr<rtc::PeerConnection> pc;
-    std::shared_ptr<rtc::DataChannel> dc; 
+    std::shared_ptr<rtc::PeerConnection> m_pc;
+    std::shared_ptr<rtc::DataChannel> m_dc; 
 };

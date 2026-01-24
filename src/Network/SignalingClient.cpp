@@ -3,12 +3,12 @@
 
 void SignalingClient::connect(const std::string& url)
 {
-    ws.onOpen([this]()
+    m_ws.onOpen([this]()
         {
             if (onConnect) onConnect();
         });
 
-    ws.onMessage([this](auto data)
+    m_ws.onMessage([this](auto data)
         {
             if (!std::holds_alternative<std::string>(data)) return;
             
@@ -32,8 +32,8 @@ void SignalingClient::connect(const std::string& url)
             }
         });
 
-    ws.onClosed([this]() { exitSignal.set_value(); });
-    ws.open(url);
+    m_ws.onClosed([this]() { m_exit_signal.set_value(); });
+    m_ws.open(url);
 }
 
 void SignalingClient::sendSdp(const std::string& sdp, const std::string& type)
@@ -41,7 +41,7 @@ void SignalingClient::sendSdp(const std::string& sdp, const std::string& type)
     json msg;
     msg["description"]["sdp"] = sdp;
     msg["description"]["type"] = type;
-    ws.send(msg.dump());
+    m_ws.send(msg.dump());
 }
 
 void SignalingClient::sendCandidate(const std::string& candidate, const std::string& mid)
@@ -49,11 +49,11 @@ void SignalingClient::sendCandidate(const std::string& candidate, const std::str
     json msg;
     msg["candidate"] = candidate;
     msg["sdpMid"] = mid;
-    ws.send(msg.dump());
+    m_ws.send(msg.dump());
 }
 
 void SignalingClient::run()
 {
-    auto future = exitSignal.get_future();
+    auto future = m_exit_signal.get_future();
     future.wait();
 }

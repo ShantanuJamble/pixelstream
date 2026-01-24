@@ -66,6 +66,16 @@ void PhysicsEngine::loop(SendFunction sendCallback)
 
         // Send Data
         sendCallback(serialize(ball));
+        // try {
+        //     sendCallback(serialize(ball));
+        // }
+        // catch (const std::exception& e) {
+        //     std::cerr << "[Physics] Error sending data: " << e.what() << std::endl;
+        //     // isRunning = false; 
+        // }
+        // catch (...) {
+        //     std::cerr << "[Physics] Unknown error sending data." << std::endl;
+        // }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }

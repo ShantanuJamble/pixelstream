@@ -20,6 +20,6 @@ public:
     void run(); // blocking run for main thread
 
 private:
-    rtc::WebSocket ws;
-    std::promise<void> exitSignal;
+    rtc::WebSocket m_ws;
+    std::promise<void> m_exit_signal;
 };
