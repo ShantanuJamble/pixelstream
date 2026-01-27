@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>PixelStream: Physics</title>
+    <title>PixelStream: Physics & video</title>
     <style>
         body { background: #222; color: #fff; text-align: center; font-family: sans-serif; }
         canvas { background: #000; border: 2px solid #555; margin-top: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
@@ -12,6 +12,7 @@
 <h1>PixelStream: Remote Physics (C++ Authority)</h1>
 <button onclick="startCall()" style="padding: 10px 20px; font-size: 1.2rem; cursor: pointer;">Connect & Play</button>
 <br>
+<video id="remoteVideo" autoplay playsinline style="width: 640px; height: 480px; background: #000; border: 2px solid red;"></video>
 <canvas id="gameCanvas" width="800" height="600"></canvas>
 
 <script>
@@ -63,10 +64,15 @@
                 draw(x, y);
             }
         };
-
+        pc.addTransceiver('video', { direction: 'recvonly' });
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
         signaling.send(JSON.stringify({ description: pc.localDescription }));
+        pc.ontrack = (event) => {
+            console.log("Received Remote Stream:", event.track.kind);
+            const videoEl = document.getElementById("remoteVideo");
+            videoEl.srcObject = event.streams[0] || new MediaStream([event.track]);
+        };
     }
 </script>
 </body>
