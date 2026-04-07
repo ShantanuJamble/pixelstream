@@ -3,6 +3,7 @@
 #include "Network/WebRTCManager.hpp"
 #include "SimEngine/PhysicsEngine.hpp"
 #include "Media/VideoPipeline.hpp"
+
 int main() {
 
     VideoPipeline& video = VideoPipeline::getInstance();
@@ -12,12 +13,6 @@ int main() {
         return -1;
     }
 
-    // Start
-    video.start([](const std::vector<uint8_t>& data) {
-        std::cout << "[Main] Packet: " << data.size() << " bytes" << std::endl;
-    });
-
-    //std::this_thread::sleep_for(std::chrono::seconds(5));
     SignalingClient signaling;
     WebRTCManager webrtc;
     PhysicsEngine engine;
@@ -40,17 +35,26 @@ int main() {
         webrtc.handleRemoteCandidate(candidate, mid);
     };
     
-    // 3. Wire WebRTC -> Physics (Start Engine when channel opens)
+    // 3. Wire DataChannel -> Physics + Video
     webrtc.onDataChannel([&](std::shared_ptr<rtc::DataChannel> dc) {
-        std::cout << "[Main] DataChannel Ready. Wiring Physics..." << std::endl;
+        std::cout << "[Main] DataChannel Ready. Wiring Physics + Video..." << std::endl;
         
-        dc->onOpen([dc, &engine]() {
-            // Start the engine, passing a lambda to send data
+        dc->onOpen([dc, &engine, &video, &webrtc]() {
+            // Start the physics engine
             engine.run([dc](const std::vector<std::uint8_t>& data) {
                  if (dc->isOpen()) {
                      dc->send(reinterpret_cast<const std::byte*>(data.data()), data.size());
                  }
             });
+
+            // Create a second DataChannel for video (SCTP in-band, no SDP renegotiation)
+            webrtc.createVideoChannel();
+
+            // Start the GStreamer pipeline — JPEG frames go over the video DataChannel
+            video.start([&webrtc](const std::vector<uint8_t>& data) {
+                webrtc.sendVideoData(data);
+            });
+            std::cout << "[Main] VideoPipeline started — streaming JPEG over DataChannel." << std::endl;
         });
     });
     

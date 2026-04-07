@@ -21,12 +21,12 @@ public:
     void onLocalDescription(LocalDescriptionCallback callback);
     void onLocalCandidate(LocalCandidateCallback callback);
 
-    // Video Logic
-    void setupVideoTrack();
-    void sendVideo(const std::vector<uint8_t>& data);
+    // Video over DataChannel (bypasses media track SDP issues)
+    void createVideoChannel();
+    void sendVideoData(const std::vector<uint8_t>& data);
 
 private:
     std::shared_ptr<rtc::PeerConnection> m_pc;
     std::shared_ptr<rtc::DataChannel> m_dc;
-    std::shared_ptr<rtc::Track> m_videoTrack;
+    std::shared_ptr<rtc::DataChannel> m_videoDc;
 };

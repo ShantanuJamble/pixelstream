@@ -4,13 +4,13 @@
 WebRTCManager::WebRTCManager()
 {
     rtc::Configuration config;
-    //config.iceServers.emplace_back("stun:stun.l.google.com:19302");
+    // No video track added — video goes over a DataChannel instead.
+    // This means the SDP only negotiates DataChannels, which works reliably.
     m_pc = std::make_shared<rtc::PeerConnection>(config);
     
     m_pc->onStateChange([](rtc::PeerConnection::State state) {
         std::cout << "[WebRTC] State: " << state << std::endl;
     });
-    setupVideoTrack();
 }
 
 void WebRTCManager::handleRemoteSdp(const std::string& sdp, const std::string& type)
@@ -47,32 +47,23 @@ void WebRTCManager::onLocalCandidate(LocalCandidateCallback callback)
     });
 }
 
-void WebRTCManager::setupVideoTrack()
+void WebRTCManager::createVideoChannel()
 {
-    if (m_videoTrack) return;
-
-    // Create a Video Track (label: "video")
-    m_videoTrack = m_pc->addTrack(rtc::Description::Video("video"));
-
-    // Force H.264 Codec (Payload Type 96)
-    // "42e01f" = Constrained Baseline Profile (Browser compatible)
-    rtc::Description::Video media("video", rtc::Description::Direction::SendOnly);
-    media.addH264Codec(96, "packetization-mode=1;profile-level-id=42e01f");
-    m_videoTrack->setDescription(media);
-
-    std::cout << "[WebRTC] Video Track Created." << std::endl;
+    // Create a second DataChannel for video frames AFTER the connection is up.
+    // This uses SCTP in-band signaling (DCEP) — no SDP renegotiation needed.
+    m_videoDc = m_pc->createDataChannel("video");
+    m_videoDc->onOpen([]() {
+        std::cout << "[WebRTC] Video DataChannel OPENED." << std::endl;
+    });
+    m_videoDc->onClosed([]() {
+        std::cout << "[WebRTC] Video DataChannel CLOSED." << std::endl;
+    });
+    std::cout << "[WebRTC] Video DataChannel created." << std::endl;
 }
 
-void WebRTCManager::sendVideo(const std::vector<uint8_t>& data)
+void WebRTCManager::sendVideoData(const std::vector<uint8_t>& data)
 {
-    if (!m_videoTrack || m_pc->state() != rtc::PeerConnection::State::Connected) return;
-
-    // 2. STRIP RTP HEADER (The Fix)
-    // GStreamer sends 12 byte RTP header. libdatachannel adds its own.
-    // We must remove GStreamer's header to avoid "Double Header" corruption.
-    if (data.size() > 12) {
-        auto payload_ptr = reinterpret_cast<const std::byte*>(data.data() + 12);
-        size_t payload_size = data.size() - 12;
-        m_videoTrack->send(payload_ptr, payload_size);
+    if (m_videoDc && m_videoDc->isOpen()) {
+        m_videoDc->send(reinterpret_cast<const std::byte*>(data.data()), data.size());
     }
 }

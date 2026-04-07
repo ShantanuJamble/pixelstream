@@ -46,15 +46,16 @@ bool VideoPipeline::initGStreamer()
     }
 
     // Build Pipeline
-    // PIPELINE: Capture -> Encode -> Packetize (RTP) -> AppSink (C++ Callback)
-    // 1. tune=zerolatency, can play around based on requirements..
-    // 2. speed-preset=ultrafast: Sacrifice quality for speed.
-    // 3. rtph264pay: Wraps H.264 into RTP packets (seting up data WebRTC).
-    // 4. appsink: Hand the data to us.
+    // PIPELINE: Capture -> Scale -> Rate-limit -> JPEG Encode -> AppSink
+    // Video is sent over a DataChannel (not a media track) to sidestep
+    // There's some weird bug with encoding for gstreamer + webRTC.
+    // TODO: Try using gstreamer's webRTC plugin. 
+    // libdatachannel SDP negotiation issues with video tracks.
+    // JPEG is natively decodable in the browser — no codec setup needed.
     const std::string pipeline_str = 
-        "d3d11screencapturesrc ! videoconvert ! "
-        "x264enc tune=zerolatency speed-preset=ultrafast key-int-max=60 ! "
-        "rtph264pay config-interval=1 ! "
+        "d3d11screencapturesrc ! videoconvert ! videoscale ! videorate ! "
+        "video/x-raw,width=1280,height=720,framerate=24/1 ! "
+        "jpegenc quality=50 ! "
         "appsink name=pixelstreamvideosink emit-signals=true sync=false";
 
     m_pipeline = gst_parse_launch(pipeline_str.c_str(), &error);
