@@ -30,10 +30,7 @@ Open web/index.html in your browser and click "Connect & Play".
 
 
 ## Walkthrough
-[![Video Demo with Gstreamer](https://img.youtube.com/vi/ziR86J7MJTQ/maxresdefault.jpg)](https://youtu.be/ziR86J7MJTQ)
-| :---: | :---: |
-[![Video Demo Physics sim](https://img.youtube.com/vi/hQkQeegANvk/maxresdefault.jpg)](https://youtu.be/hQkQeegANvk)
 
-| GStreamer Demo | Physics Sim Demo |
-| :---: | :---: |
+|                                             **GStreamer Demo**                                             |                                          **Physics Sim Demo**                                           |
+|:----------------------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------:|
 | [![Video Demo with Gstreamer](https://img.youtube.com/vi/ziR86J7MJTQ/0.jpg)](https://youtu.be/ziR86J7MJTQ) | [![Video Demo Physics sim](https://img.youtube.com/vi/hQkQeegANvk/0.jpg)](https://youtu.be/hQkQeegANvk) |
