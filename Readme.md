@@ -1,12 +1,10 @@
 ## About
 This is my exploratory project to steup webRTC based stream.
 - Currently supports data channel.
-- Video track in works. 
+- Video track is currently in dev. 
 
 ## Building/Generating:
 You can use build_project.bat to generate and build the project. 
-
-
 
 ## Testing WebRTC setup
 ### Step 1: Run the Signaling Server
@@ -26,7 +24,7 @@ Start the executable under build folder in a terminal or powershell.
 ### Step 3: Verify with a 3rd Party Client
 Open web/index.html in your browser and click "Connect & Play".
 
-- Expected Result: A blue ball bouncing smoothly at 60 FPS.
+- Expected Result: A ball bouncing smoothly at 60 FPS.
 
 
 ## Walkthrough
