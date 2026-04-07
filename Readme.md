@@ -1,3 +1,8 @@
+## About
+This is my exploratory project to steup webRTC based stream.
+- Currently supports data channel.
+- Video track in works. 
+
 ## Building/Generating:
 You can use build_project.bat to generate and build the project. 
 
@@ -22,9 +27,6 @@ Start the executable under build folder in a terminal or powershell.
 Open web/index.html in your browser and click "Connect & Play".
 
 - Expected Result: A blue ball bouncing smoothly at 60 FPS.
-- Stress Test: Refresh the page and reconnect multiple times. The C++ app should handle the thread restart 
-and only one clinet (latest) should remain active.
-
 
 
 ## Walkthrough
