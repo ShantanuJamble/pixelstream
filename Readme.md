@@ -2,7 +2,7 @@
 This is my exploratory project to steup webRTC based stream.
 - Currently supports data channel.
 - Video track is currently in dev. 
-    - Currently works in a very hackish way. I am funneling lot of Jpegs though data channel instead of video track. (Not scalable)
+    - Currently works in a very hackish way. I am funneling lot of Jpegs though data channel instead of video track. 
     - Try and use gstreamer's tried and tested solution [rswebrtc](https://gstreamer.freedesktop.org/documentation/rswebrtc/index.html?gi-language=c) to get video track working.    
 
 Check Demo at [Walkthrough section](#walkthrough).
